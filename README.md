@@ -10,12 +10,9 @@ Features:
 
 References
 -----------
-http://forum.devmaster.net/t/advanced-rasterization/6145
-  - basic setup / rasterization, subpixel precision, fill convention
-http://fgiesen.wordpress.com/2013/02/17/optimizing-sw-occlusion-culling-index/
-  - maths, optimalizations
-http://www1.eonfusion.com/manual/index.php/Formulae_for_interpolation
-  - vertex attribute interpolation    
+* http://forum.devmaster.net/t/advanced-rasterization/6145 - basic setup / rasterization, subpixel precision, fill convention
+* http://fgiesen.wordpress.com/2013/02/17/optimizing-sw-occlusion-culling-index/ - maths, optimalizations
+* http://www1.eonfusion.com/manual/index.php/Formulae_for_interpolation - vertex attribute interpolation (link doesn't work anymore, search archive.org) 
 
 Compilation
 -----------
