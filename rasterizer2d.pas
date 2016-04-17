@@ -73,7 +73,6 @@ type
       texture: pbyte;
       width, height: integer;
       stride: integer;
-      offset_u, offset_v: single;
     public
       constructor Create;
       procedure SetTexture(const texture_: TTexture2D);
@@ -230,8 +229,6 @@ begin
   width  := texture_.m_width;
   height := texture_.m_height;
   stride := texture_.m_stride;
-  offset_u := 1/(2*width);
-  offset_v := 1/(2*height);
 end;
 
 function TTexSampler.GetNearest(const u, v: single): TPixelRGBA;
@@ -255,8 +252,8 @@ var
   p1, p2, p3, p4: TPixelRGBA; // pixel samples
   r, g, b: longword;
 begin
-  tu0 := TexCoordWrapRepeat(u - offset_u) * width ;
-  tv0 := TexCoordWrapRepeat(v - offset_v) * height;
+  tu0 := TexCoordWrapRepeat(u) * width ;
+  tv0 := TexCoordWrapRepeat(v) * height;
   x0 := trunc( tu0 );
   x1 := x0 + 1;
   if x0 = width - 1 then
@@ -374,6 +371,15 @@ begin
       triangle[2].y *= dst_height;
   end;
 
+  //offset texel centers
+  if m_sampleType in [fsNearest, fsLinear] then begin
+      offset_u := 1/(2*tev.width);
+      offset_v := 1/(2*tev.height);
+      for i := 0 to 2 do begin
+          triangle[i].u -= offset_u;
+          triangle[i].v -= offset_v;
+      end;
+  end;
 
   RasterizeTriangle(triangle);
 end;
