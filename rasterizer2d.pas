@@ -121,13 +121,39 @@ implementation
 uses
   math;
 
+function min3(const a, b, c: integer): integer;
+begin
+  result := min(a, min(b, c));
+end;
+
+function max3(const a, b, c: integer): integer;
+begin
+  result := max(a, max(b, c));
+end;
+
 procedure swap_vertex(var a, b: TVertexf); inline;
 var
   t: TVertexf;
 begin
-  t := a;
-  a := b;
-  b := t;
+  t := a; a := b; b := t;
+end;
+
+{
+  Make sure the triangle has counter-clockwise winding
+
+  For a triangle A B C, you can find the winding by computing the cross product (B - A) x (C - A).
+  For 2d tri's, with z=0, it will only have a z component.
+  To give all the same winding, swap vertices C and B if this z component is negative.
+}
+function EnsureCcWinding(var triangle: TTriangle): boolean;
+begin
+  result := false;
+  if (triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y)
+      > (triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y)
+  then begin
+      swap_vertex(triangle[1], triangle[2]);
+      result := true;
+  end;
 end;
 
 { TLinearAttributeSetup }
@@ -330,19 +356,25 @@ begin
 end;
 
 
-function min3(const a, b, c: integer): integer;
-begin
-  result := min(a, min(b, c));
-end;
-
-function max3(const a, b, c: integer): integer;
-begin
-  result := max(a, max(b, c));
-end;
-
-
 procedure TPoly2dRasterizer.DrawTriangle(triangle: TTriangle);
+var
+  offset_u, offset_v: single;
+  i: Integer;
 begin
+  //triangle must have counter-clockwise winding
+  EnsureCcWinding(triangle);
+
+  //scale vertices to pixel grid
+  if m_scale_unit_coords then begin
+      triangle[0].x *= dst_width;
+      triangle[0].y *= dst_height;
+      triangle[1].x *= dst_width;
+      triangle[1].y *= dst_height;
+      triangle[2].x *= dst_width;
+      triangle[2].y *= dst_height;
+  end;
+
+
   RasterizeTriangle(triangle);
 end;
 
@@ -353,29 +385,10 @@ var
 begin
   pix_per_batch := 0;
   for i := 0 to count - 1 do begin
-      RasterizeTriangle(triangle_buffer[i]);
+      DrawTriangle(triangle_buffer[i]);
       pix_per_batch += pixels_per_triangle;
   end;
   pixels_per_triangle := pix_per_batch;
-end;
-
-
-{
-  Make sure the triangle has counter-clockwise winding
-
-  For a triangle A B C, you can find the winding by computing the cross product (B - A) x (C - A).
-  For 2d tri's, with z=0, it will only have a z component.
-  To give all the same winding, swap vertices C and B if this z component is negative.
-}
-function EnsureCcWinding(var triangle: TTriangle): boolean;
-begin
-  result := false;
-  if (triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y)
-      > (triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y)
-  then begin
-      swap_vertex(triangle[1], triangle[2]);
-      result := true;
-  end;
 end;
 
 
@@ -471,19 +484,6 @@ var
 
 begin
   pixels_per_triangle := 0;
-
-  //triangle must have counter-clockwise winding
-  EnsureCcWinding(triangle);
-
-  //scale vertices to pixel grid
-  if m_scale_unit_coords then begin
-      triangle[0].x *= dst_width;
-      triangle[0].y *= dst_height;
-      triangle[1].x *= dst_width;
-      triangle[1].y *= dst_height;
-      triangle[2].x *= dst_width;
-      triangle[2].y *= dst_height;
-  end;
 
   //setup pixel rasterization
   RasterizationSetup;
