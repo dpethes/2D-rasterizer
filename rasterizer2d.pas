@@ -120,12 +120,12 @@ implementation
 uses
   math;
 
-function min3(const a, b, c: integer): integer;
+function min3(const a, b, c: integer): integer; inline;
 begin
   result := min(a, min(b, c));
 end;
 
-function max3(const a, b, c: integer): integer;
+function max3(const a, b, c: integer): integer; inline;
 begin
   result := max(a, max(b, c));
 end;
