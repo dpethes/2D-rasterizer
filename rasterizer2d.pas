@@ -233,14 +233,15 @@ end;
 
 function TTexSampler.GetNearest(const u, v: single): TPixelRGBA;
 var
-  vt, ut: integer;
-  idx: integer;
+  tu, tv: single;
+  x, y: integer;
 begin
-  vt := round( TexCoordWrapRepeat(v) * (height - 1) );
-  ut := round( TexCoordWrapRepeat(u) * (width  - 1) );
-  idx := vt * stride + ut * TEX_SAMPLE_SIZE;
-  result := PPixelRGBA(texture + idx)^;
-end;
+  tu := TexCoordWrapRepeat(u) * width ;
+  tv := TexCoordWrapRepeat(v) * height;
+  x := trunc( tu );
+  y := trunc( tv );
+  result := PPixelRGBA(texture + y * stride + x * TEX_SAMPLE_SIZE)^;
+end; 
 
 
 function TTexSampler.GetLinear(const u, v: single): TPixelRGBA;
